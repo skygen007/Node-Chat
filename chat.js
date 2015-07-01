@@ -96,7 +96,7 @@ wss.on('connection', function(ws) {
                           steamid: rows[0].steamid
                         };
 
-                        users[message.ip] = userInfo;
+                        users[ws.upgradeReq.headers['sec-websocket-key']] = userInfo;
                      console.log(users);
 
 
@@ -126,7 +126,7 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-        users.slice(users.indexof(ws.socket.upgradeReq.connection.remoteAddress));
+        users.slice(users.indexof(ws.upgradeReq.headers['sec-websocket-key'])));
         console.log(users);
 
     });
