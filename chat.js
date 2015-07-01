@@ -126,7 +126,7 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-        users.slice(users.indexof(ws.upgradeReq.headers['sec-websocket-key']));
+        users.slice(users.indexOf(ws.upgradeReq.headers['sec-websocket-key']));
         console.log(users);
 
     });
