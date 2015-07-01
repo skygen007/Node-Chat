@@ -57,6 +57,9 @@ var online = new Object();
 online.status = 'online';
 online.online = 0;
 
+var users = new Object();
+
+
 wss.on('connection', function(ws) {
 
     var newuser = new Object();
@@ -86,9 +89,10 @@ wss.on('connection', function(ws) {
 
                         if (err && isEmptyObject(rows)) throw err;
 
-                     console.log(rows);
+                        users[rows[0].steamid] = "test";
+                     console.log(users);
 
-                     
+
 
 
                     });
