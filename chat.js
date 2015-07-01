@@ -86,23 +86,9 @@ wss.on('connection', function(ws) {
 
                         if (err && isEmptyObject(rows)) throw err;
 
-                        var newmessage = new Object();
+                     console.log(rows);
 
-                        newmessage.status = 'new';
-                        newmessage.nickname = rows[0].nickname;
-                        newmessage.avatar = rows[0].avatar;
-                        newmessage.text = text;
-                        newmessage.time = message.time;
-
-                        firstmessages.push(newmessage);
-                        if (firstmessages.length > 15) {
-                            firstmessages.splice(0, 1);
-                        }
-
-
-                        var datatosend = JSON.stringify(newmessage);
-                        wss.broadcast(datatosend);
-
+                     
 
 
                     });
