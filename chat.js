@@ -70,7 +70,7 @@ wss.broadcast(datatosend);
 
   ws.on('message', function incoming(message) {
 
-    
+    console.log(message);
 
 
   });//Event onmessage
