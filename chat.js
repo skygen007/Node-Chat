@@ -88,7 +88,7 @@ wss.on('connection', function(ws) {
 
                         connection.end();
 
-                        if (err && isEmptyObject(rows)) throw err;
+                        if (err && !rows[0].steamid) throw err;
 
                         var userInfo = {
                           name: rows[0].nickname,
@@ -126,7 +126,7 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-       console.log(users.indexOf(ws.upgradeReq.headers['sec-websocket-key']));
+       users[ws.upgradeReq.headers['sec-websocket-key']] = {};
         console.log(users);
 
     });
@@ -139,6 +139,3 @@ String.prototype.countWords = function() {
     return this.split(/\s+/).length;
 }
 
-function isEmptyObject(obj) {
-    return !Object.keys(obj).length;
-}
