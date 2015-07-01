@@ -76,7 +76,7 @@ wss.on('connection', function(ws) {
     ws.on('message', function incoming(message) {
 
         console.log(message);
-         console.log(ws._socket.remoteAddress);
+    
 
         try {
             message = JSON.parse(message);
@@ -126,7 +126,8 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-
+        users.slice(users.indexof(ws.socket.upgradeReq.connection.remoteAddress));
+        console.log(users);
 
     });
 
