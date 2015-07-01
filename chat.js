@@ -88,7 +88,7 @@ wss.on('connection', function(ws) {
 
                         connection.end();
 
-                        if (err && !rows[0].steamid) throw err;
+                        if (err && rows === []) throw err;
 
                         var userInfo = {
                           name: rows[0].nickname,
