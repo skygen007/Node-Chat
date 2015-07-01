@@ -1,12 +1,12 @@
 var fs = require('fs');
 var S = require('string');
-var mysql      = require('mysql');
-var pool  = mysql.createPool({
-connectionLimit : 10,
-  host     : '31.220.20.84',
-  user     : 'u521549300_222',
-  database: "u521549300_222",
-        password : "ebe22bcg2"
+var mysql = require('mysql');
+var connection = mysql.createPool({
+    connectionLimit: 10,
+    host: '31.220.20.84',
+    user: 'u521549300_222',
+    database: "u521549300_222",
+    password: "ebe22bcg2"
 });
 
 var cfg = {
@@ -16,39 +16,41 @@ var cfg = {
     ssl_cert: 'unified.crt'
 };
 
-var httpServ = ( cfg.ssl ) ? require('https') : require('http');
+var httpServ = (cfg.ssl) ? require('https') : require('http');
 
-var app      = null;
+var app = null;
 
 // dummy request processing
-var processRequest = function( req, res ) {
+var processRequest = function(req, res) {
 
     res.writeHead(404);
     res.end();
 };
 
-if ( cfg.ssl ) {
+if (cfg.ssl) {
 
     app = httpServ.createServer({
 
         // providing server with  SSL key/cert
-        key: fs.readFileSync( cfg.ssl_key ),
-        cert: fs.readFileSync( cfg.ssl_cert )
+        key: fs.readFileSync(cfg.ssl_key),
+        cert: fs.readFileSync(cfg.ssl_cert)
 
-    }, processRequest ).listen( cfg.port );
+    }, processRequest).listen(cfg.port);
 
 } else {
 
-    app = httpServ.createServer( processRequest ).listen( cfg.port );
+    app = httpServ.createServer(processRequest).listen(cfg.port);
 }
 
 // passing or reference to web server so WS would knew port and SSL capabilities
 var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer( { server: app } );
+var wss = new WebSocketServer({
+    server: app
+});
 
 wss.broadcast = function(data) {
-  for (var i in this.clients)
-    this.clients[i].send(data);
+    for (var i in this.clients)
+        this.clients[i].send(data);
 };
 var firstmessages = [];
 var online = new Object();
@@ -57,39 +59,86 @@ online.online = 0;
 
 wss.on('connection', function(ws) {
 
- var newuser = new Object();
-newuser.status = 'first';
-newuser.messages = firstmessages;
-var datatosend = JSON.stringify(newuser);
-ws.send(datatosend);
+    var newuser = new Object();
+    newuser.status = 'first';
+    newuser.messages = firstmessages;
+    var datatosend = JSON.stringify(newuser);
+    ws.send(datatosend);
 
 
-online.online = online.online + 1;
-var datatosend = JSON.stringify(online);
-wss.broadcast(datatosend);
+    online.online = online.online + 1;
+    var datatosend = JSON.stringify(online);
+    wss.broadcast(datatosend);
 
-  ws.on('message', function incoming(message) {
+    ws.on('message', function incoming(message) {
 
-    console.log(message);
+        console.log(message);
+
+        try {
+            message = JSON.parse(message);
+
+            switch (message.status) {
+                case 'newUser':
+
+                    connection.query('SELECT nickname,avatar,steamid FROM steamids WHERE hash=' + connection.escape(message.hash), function(err, rows) {
+
+                        connection.end();
+
+                        if (err && isEmptyObject(rows)) throw err;
+
+                        var newmessage = new Object();
+
+                        newmessage.status = 'new';
+                        newmessage.nickname = rows[0].nickname;
+                        newmessage.avatar = rows[0].avatar;
+                        newmessage.text = text;
+                        newmessage.time = message.time;
+
+                        firstmessages.push(newmessage);
+                        if (firstmessages.length > 15) {
+                            firstmessages.splice(0, 1);
+                        }
 
 
-  });//Event onmessage
+                        var datatosend = JSON.stringify(newmessage);
+                        wss.broadcast(datatosend);
 
-ws.on('close', function() {
-online.online = online.online - 1;
-var datatosend = JSON.stringify(online);
-wss.broadcast(datatosend);
+
+
+                    });
+
+
+
+
+                    break;
+
+            }
+
+        } catch (err) {
+
+
+
+
+        }
+
+
+    }); //Event onmessage
+
+    ws.on('close', function() {
+        online.online = online.online - 1;
+        var datatosend = JSON.stringify(online);
+        wss.broadcast(datatosend);
+
+    });
+
 
 });
 
 
-});
-
-
-String.prototype.countWords = function(){
-  return this.split(/\s+/).length;
+String.prototype.countWords = function() {
+    return this.split(/\s+/).length;
 }
 
 function isEmptyObject(obj) {
-  return !Object.keys(obj).length;
+    return !Object.keys(obj).length;
 }
