@@ -76,6 +76,7 @@ wss.on('connection', function(ws) {
     ws.on('message', function incoming(message) {
 
         console.log(message);
+         console.log(ws._socket.remoteAddress);
 
         try {
             message = JSON.parse(message);
@@ -89,7 +90,13 @@ wss.on('connection', function(ws) {
 
                         if (err && isEmptyObject(rows)) throw err;
 
-                        users[rows[0].steamid] = "test";
+                        var userInfo = {
+                          name: rows[0].nickname,
+                          avatar: rows[0].avatar,
+                          steamid: rows[0].steamid
+                        };
+
+                        users[message.ip] = userInfo;
                      console.log(users);
 
 
@@ -118,6 +125,8 @@ wss.on('connection', function(ws) {
         online.online = online.online - 1;
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
+
+
 
     });
 
