@@ -86,7 +86,7 @@ wss.on('connection', function(ws) {
 
                     connection.query('SELECT nickname,avatar,steamid FROM steamids WHERE hash=' + connection.escape(message.hash), function(err, rows) {
 
-                        connection.end();
+                        
 
                         if (err && rows === []) throw err;
 
@@ -97,7 +97,7 @@ wss.on('connection', function(ws) {
                         };
 
                         users[ws.upgradeReq.headers['sec-websocket-key']] = userInfo;
-                     console.log(users);
+                    
 
 
 
@@ -108,6 +108,39 @@ wss.on('connection', function(ws) {
 
 
                     break;
+
+                case 'msg':
+
+        var text = message.text;
+
+        text = S(text).stripTags().s;//HTML tags
+        text = S(text).trim().s;//whitespaces
+        text = S(text).collapseWhitespace().s;//whitespaces
+        
+
+        text = S(text).strip('\\').s;
+        if(S(text).length > 50){
+         text = S(text).truncate(50).s;}
+         text = S(text).capitalize().s;
+
+         if(text){
+
+          var msg = {
+            msg:text,
+            steamid: users[ws.upgradeReq.headers['sec-websocket-key']].steamid,
+            name: users[ws.upgradeReq.headers['sec-websocket-key']].nickname,
+            avatar: users[ws.upgradeReq.headers['sec-websocket-key']].avatar,
+            time: message.time
+
+          };
+
+
+      wss.broadcast(JSON.stringify(msg));
+
+         }
+
+
+                break;
 
             }
 
@@ -126,8 +159,8 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-       users[ws.upgradeReq.headers['sec-websocket-key']] = {};
-        console.log(users);
+       delete users[ws.upgradeReq.headers['sec-websocket-key']];
+        
 
     });
 
