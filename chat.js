@@ -76,7 +76,7 @@ wss.on('connection', function(ws) {
     ws.on('message', function incoming(message) {
 
         console.log(message);
-    
+
 
         try {
             message = JSON.parse(message);
@@ -86,18 +86,17 @@ wss.on('connection', function(ws) {
 
                     connection.query('SELECT nickname,avatar,steamid FROM steamids WHERE hash=' + connection.escape(message.hash), function(err, rows) {
 
-                        
+
 
                         if (err && rows === []) throw err;
 
                         var userInfo = {
-                          name: rows[0].nickname,
-                          avatar: rows[0].avatar,
-                          steamid: rows[0].steamid
+                            name: rows[0].nickname,
+                            avatar: rows[0].avatar,
+                            steamid: rows[0].steamid
                         };
 
                         users[ws.upgradeReq.headers['sec-websocket-key']] = userInfo;
-                    
 
 
 
@@ -111,36 +110,42 @@ wss.on('connection', function(ws) {
 
                 case 'msg':
 
-        var text = message.text;
+                    var text = message.text;
 
-        text = S(text).stripTags().s;//HTML tags
-        text = S(text).trim().s;//whitespaces
-        text = S(text).collapseWhitespace().s;//whitespaces
-        
-
-        text = S(text).strip('\\').s;
-        if(S(text).length > 50){
-         text = S(text).truncate(50).s;}
-         text = S(text).capitalize().s;
-
-         if(text){
-
-          var msg = {
-            msg:text,
-            steamid: users[ws.upgradeReq.headers['sec-websocket-key']].steamid,
-            name: users[ws.upgradeReq.headers['sec-websocket-key']].nickname,
-            avatar: users[ws.upgradeReq.headers['sec-websocket-key']].avatar,
-            time: message.time
-
-          };
+                    text = S(text).stripTags().s; //HTML tags
+                    text = S(text).trim().s; //whitespaces
+                    text = S(text).collapseWhitespace().s; //whitespaces
 
 
-      wss.broadcast(JSON.stringify(msg));
+                    text = S(text).strip('\\').s;
+                    if (S(text).length > 50) {
+                        text = S(text).truncate(50).s;
+                    }
+                    text = S(text).capitalize().s;
 
-         }
+                    if (text) {
+
+                        var msg = {
+                            msg: text,
+                            steamid: users[ws.upgradeReq.headers['sec-websocket-key']].steamid,
+                            name: users[ws.upgradeReq.headers['sec-websocket-key']].nickname,
+                            avatar: users[ws.upgradeReq.headers['sec-websocket-key']].avatar,
+                            time: message.time
+
+                        };
+
+                        wss.broadcast(JSON.stringify(msg));
+
+                        firstmessages.push(msg);
+
+                        if (firstmessages.length > 15) {
+                            firstmessages.splice(0, 1);
+                        }
+
+                    }
 
 
-                break;
+                    break;
 
             }
 
@@ -159,8 +164,8 @@ wss.on('connection', function(ws) {
         var datatosend = JSON.stringify(online);
         wss.broadcast(datatosend);
 
-       delete users[ws.upgradeReq.headers['sec-websocket-key']];
-        
+        delete users[ws.upgradeReq.headers['sec-websocket-key']];
+
 
     });
 
@@ -171,4 +176,3 @@ wss.on('connection', function(ws) {
 String.prototype.countWords = function() {
     return this.split(/\s+/).length;
 }
-
