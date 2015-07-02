@@ -128,7 +128,7 @@ wss.on('connection', function(ws) {
                         var msg = {
                             msg: text,
                             steamid: users[ws.upgradeReq.headers['sec-websocket-key']].steamid,
-                            name: users[ws.upgradeReq.headers['sec-websocket-key']].nickname,
+                            name: users[ws.upgradeReq.headers['sec-websocket-key']].name,
                             avatar: users[ws.upgradeReq.headers['sec-websocket-key']].avatar,
                             time: message.time
 
